@@ -1,52 +1,43 @@
-
 #include "MPU9250.h"
 
-MPU9250 IMU(Wire, 0x68);
-#define FOSC 16000000  
-#define BAUD 115200
-#define MYUBRR FOSC / 16 / BAUD - 1
+// an MPU9250 object with the MPU-9250 sensor on I2C bus 0 with address 0x68
+MPU9250 IMU(Wire,0x68);
+int status;
 
-/*! \brief Fonction Main
- */
-int main(void) {
-  USART_Init(MYUBRR);
-  sei();
-  int status = IMU.begin();
+void setup() {
+  // serial to display data
+  Serial.begin(115200);
+  while(!Serial) {}
+
+  // start communication with IMU 
+  status = IMU.begin();
   if (status < 0) {
-    while (1) {}
-  }
-  while (1) {
-    _delay_ms(200);
-    SensorData();
+    Serial.println("ERREUR");
+    while(1) {}
   }
 }
 
-/*! \brief Fonction Initialisation de la communication
- */
-void USART_Init(unsigned int ubrr) {
-  /*Set baud rate */
-  UBRR0H = (unsigned char)(ubrr >> 8);
-  UBRR0L = (unsigned char)ubrr;
-  //Enable receiver and transmitter * /
-  UCSR0B = (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
-  /* Set frame format: 8data, 2stop bit */
-  UCSR0C = (1 << USBS0) | (3 << UCSZ00);
-}
-
-/*! \brief Fonction Transmission de la communication
- */
-void USART_Transmit(unsigned char data) {
-  /* Attendre que toutes les données soient chargées */
-  while (!(UCSR0A & (1 << UDRE0)))
-    ;
-  UDR0 = data;
-}
-
-/*! \brief Fonction de lecture et envoi des données du capteur
- */
-void SensorData() {
+void loop() {
+  // read the sensor
   IMU.readSensor();
-  USART_Transmit(IMU.getAccelX_mss(), IMU.getAccelY_mss(), IMU.getAccelZ_mss(),
-          IMU.getGyroX_rads(), IMU.getGyroY_rads(), IMU.getGyroZ_rads());
-  }
-}
+  // display the data
+  Serial.print("AccelX: ");
+  Serial.print(IMU.getAccelX_mss(),6);
+  Serial.print("	");
+  Serial.print("AccelY: ");  
+  Serial.print(IMU.getAccelY_mss(),6);
+  Serial.print("	");
+  Serial.print("AccelZ: ");  
+  Serial.println(IMU.getAccelZ_mss(),6);
+  
+  Serial.print("GyroX: ");
+  Serial.print(IMU.getGyroX_rads(),6);
+  Serial.print("	");
+  Serial.print("GyroY: ");  
+  Serial.print(IMU.getGyroY_rads(),6);
+  Serial.print("	");
+  Serial.print("GyroZ: ");  
+  Serial.println(IMU.getGyroZ_rads(),6);
+
+  delay(200);
+} 
