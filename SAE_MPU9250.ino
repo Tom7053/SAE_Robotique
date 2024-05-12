@@ -10,9 +10,6 @@
 
 #define PI 3.14159
 
-volatile int flag = 0;          // Variable pour indiquer la réception de données
-volatile char received_data;    // Variable pour stocker les données reçues
-
 MPU9250 IMU(Wire,0x68);  // Déclaration de l'objet MPU9250
 int status;
 
@@ -21,8 +18,8 @@ void USART_Init(unsigned int ubrr) {
   /* Configuration du taux de bauds */
   UBRR0H = (unsigned char)(ubrr >> 8);
   UBRR0L = (unsigned char)ubrr;
-  // Activation du récepteur et du transmetteur, et activation de l'interruption de réception
-  UCSR0B = (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
+  // Activation du transmetteur
+  UCSR0B = (1 << TXEN0);
   /* Configuration du format de trame : 8 bits de données, 1 bit de stop */
   UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
 }
@@ -34,12 +31,6 @@ void USART_Transmit(unsigned char data) {
     ;
   /* Envoi des données dans le buffer */
   UDR0 = data;
-}
-
-// Interruption pour la réception sur USART
-ISR(USART_RX_vect) {
-  received_data = UDR0;
-  flag = 1;
 }
 
 int main(void) {
@@ -72,12 +63,6 @@ int main(void) {
 
     // Transmission de l'angle calculé via USART
     USART_Transmit(angle);
-
-    // Transmission des données reçues via USART si disponible
-    if (flag) {
-      USART_Transmit(received_data);
-      flag = 0;
-    }
 
     // Attente
     _delay_ms(500);
