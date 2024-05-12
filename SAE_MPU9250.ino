@@ -31,11 +31,11 @@ void USART_Transmit(unsigned char data) {
 
 // Lecture de la tension du capteur sur la broche spécifiée
 double lireTensionCapteur(uint8_t broche) {
-  // Configuration de la broche en entrée analogique jusqu'à 7
-  ADMUX = (1 << REFS0) | (broche & 00000111);
+  // Configuration du AVCC comme référence de tension pour l'ADC
+  ADMUX = (1 << REFS0) | (broche & 0b00000111);
 
   // Démarrer la conversion analogique-numérique
-  ADCSRA |= (1 << ADSC) | (1 << ADEN);
+  ADCSRA |= (1 << ADSC) | (1 << ADEN);// lancer une conversion (ADSC) / mettre en route CAN (ADEN)
 
   // Lire la valeur convertie
   uint16_t valeur = ADC;
@@ -102,7 +102,7 @@ int main(void) {
     }
 
     // Transmission de l'angle calculé et de la direction via USART
-    USART_Transmit((unsigned char)angle); // Convertir l'angle en unsigned char
+    USART_Transmit((unsigned char)angle); // Convertir l'angle 
     USART_Transmit(direction); 
 
     // Attente
