@@ -25,11 +25,7 @@ int main(void) {
     double y = IMU.getMagY_uT();
     Serial.println(x);
     Serial.println(y);
-    if (x <= 0.5 or y <= 0.5) {
-      angle = 0;
-    } else {
-      angle = atan2(x, y) * (180 / PI);
-    }
+    angle = mpu.getYaw();
     Serial.println(angle);
     delay(500);
   }
