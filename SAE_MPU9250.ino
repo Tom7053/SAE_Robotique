@@ -74,15 +74,7 @@ int main(void) {
   while (1) {
     // Lecture des valeurs d'angle du capteur MPU9250
     IMU.readSensor();
-    double x = IMU.getMagX_uT();
-    double y = IMU.getMagY_uT();
-    double angle;
-
-    if (x <= 0.5 || y <= 0.5) {
-      angle = 0;
-    } else {
-      angle = atan2(x, y) * (180 / PI);
-    }
+    angle = mpu.getYaw(); // valeur de l'angle autour de Z
 
     // Lecture des tensions des capteurs
     double tensionCapteur1 = lireTensionCapteur(PC0);
