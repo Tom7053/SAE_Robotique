@@ -49,6 +49,13 @@ double lireTensionCapteur(uint8_t broche) {
   return tension;
 }
 
+// Transmission d'une chaîne de caractères via USART
+void USART_Transmit_String(const char* str) {
+  while (*str) {
+    USART_Transmit(*str);
+    str++;
+  }
+}
 
 int main(void) {
 
@@ -72,30 +79,34 @@ int main(void) {
 
   while (1) {
     // Lecture des valeurs d'angle du capteur MPU9250
-    mpu.update();
-    angle = mpu.getYaw();  // valeur de l'angle autour de Z
+    /*mpu.update();
+    angle = mpu.getYaw();  // valeur de l'angle autour de Z*/
 
     // Lecture des tensions des capteurs
-    /*double tensionCapteur1 = lireTensionCapteur(PC0);
-    double tensionCapteur2 = lireTensionCapteur(PC1);
-    double tensionCapteur3 = lireTensionCapteur(PC2);
+double tensionCapteur1 = lireTensionCapteur(PC0);
+double tensionCapteur2 = lireTensionCapteur(PC1);
+double tensionCapteur3 = lireTensionCapteur(PC2);
 
-    // Logique de contrôle en fonction des tensions des capteurs
-    char direction;
-    if (tensionCapteur2 > 2.5) { // Si le capteur du milieu détecte le signal fort
-      direction = "avancer"; // Avancer tout droit
-    } else if (tensionCapteur1 > 2.5) { // Si le capteur de gauche détecte le signal fort
-      direction = "gauche"; // Tourner à gauche
-    } else if (tensionCapteur3 > 2.5) { // Si le capteur de droite détecte le signal fort
-      direction = "droite"; // Tourner à droite
-    } else {
-      direction = "avancer"; // Par défaut, avancer tout droit*/
-  }
+// Logique de contrôle en fonction des tensions des capteurs
+char* direction;
+
+if (tensionCapteur2 > tensionCapteur1 && tensionCapteur2 > tensionCapteur3) {
+    direction = "avancer"; // Avancer tout droit si le capteur du milieu détecte le signal le plus fort
+} else if (tensionCapteur1 > tensionCapteur2 && tensionCapteur1 > tensionCapteur3) {
+    direction = "droite"; // Tourner à droite si le capteur de gauche détecte le signal le plus fort
+} else if (tensionCapteur3 > tensionCapteur1 && tensionCapteur3 > tensionCapteur2) {
+    direction = "gauche"; // Tourner à gauche si le capteur de droite détecte le signal le plus fort
+} else {
+    direction = "avancer"; // Par défaut, avancer tout droit
+}
+
+// Affichage de la direction pour débogage
+printf("Direction: %s\n", direction);
 
   // Transmission de l'angle calculé et de la direction via USART
-  USART_Transmit((unsigned char)angle);  // Convertir l'angle
-  //USART_Transmit(direction);
-
+  //USART_Transmit((unsigned char)angle);  // Convertir l'angle
+  USART_Transmit_String(direction);
   // Attente
   _delay_ms(500);
+}
 }
