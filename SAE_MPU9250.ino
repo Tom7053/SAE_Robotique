@@ -3,8 +3,6 @@
 #include <avr/interrupt.h>
 #include "MPU9250.h"  // Ajout de la bibliothèque pour le capteur MPU9250
 
-#define PI 3.14159
-
 MPU9250 mpu;
 int status;
 double angle;
