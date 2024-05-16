@@ -1,54 +1,45 @@
-#define F_CPU 16000000UL              // Fréquence du CPU
-#define BAUD 9600                     // Débit en bauds
-#define MYUBRR F_CPU / 16 / BAUD - 1  // Calcul de la valeur d'UBRR
-
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
-volatile int flag = 0;  // Variable pour indiquer la réception de données sur USART0
+#define F_CPU 16000000UL              // Fréquence du CPU
+#define BAUD 9600                     // Débit en bauds
+#define MYUBRR F_CPU / 16 / BAUD - 1  // Calcul de la valeur d'UBRR
 
+volatile int flag = 0;                // Variable pour indiquer la réception de données sur USART0
+volatile char receivedData;           // Variable pour stocker les données reçues
 
 // Initialisation de l'USART0
 void USART0_Init(unsigned int ubrr) {
-  // Configuration du taux de bauds
   UBRR0H = (unsigned char)(ubrr >> 8);
   UBRR0L = (unsigned char)ubrr;
-  // Activation du récepteur et activation de l'interruption sur réception
-  UCSR0B = (1 << RXEN0) | (1 << RXCIE0);
-  // Configuration du format de trame : 8 bits de données, 1 bit de stop
-  UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
+  UCSR0B = (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);  // Activer le récepteur, le transmetteur et l'interruption sur réception
+  UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);                // Format de trame : 8 bits de données, 1 bit de stop
 }
 
-
-// Réception via USART0
-unsigned char USART0_Receive(void) {
-  /* Attente des données à recevoir */
-  while (!(UCSR0A & (1 << RXC0)))
-    ;
-  /* Récupération et renvoi des données reçues */
-  return UDR0;
+// Transmission via USART0 (pour afficher les données reçues)
+void USART0_Transmit(unsigned char data) {
+  while (!(UCSR0A & (1 << UDRE0)));  // Attente du buffer de transmission vide
+  UDR0 = data;                       // Envoi des données dans le buffer
 }
 
 // Interruption pour la réception sur USART0
 ISR(USART0_RX_vect) {
-  flag = 1;
+  receivedData = UDR0;  // Lire les données reçues
+  flag = 1;             // Indiquer que des données ont été reçues
 }
 
 int main(void) {
-  // Initialisation de l'USART0 et du port série logiciel
-  USART0_Init(MYUBRR);
-
-  // Activation des interruptions globales
-  sei();
+  USART0_Init(MYUBRR);  // Initialisation de l'USART0
+  sei();                // Activation des interruptions globales
 
   while (1) {
     if (flag) {
-      char receivedData = USART0_Receive();
-      flag = 0;
+      USART0_Transmit(receivedData);  // Transmission de la donnée reçue pour vérification
+      flag = 0;                       // Réinitialisation du drapeau
     }
     _delay_ms(1);  // Délai d'attente
   }
-
+  
   return 0;
 }
