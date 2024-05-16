@@ -3,6 +3,10 @@
 #include <avr/interrupt.h>
 #include "MPU9250.h"  // Ajout de la bibliothèque pour le capteur MPU9250
 
+#define F_CPU 16000000UL              // Fréquence du CPU
+#define BAUD 9600                     // Débit en bauds
+#define MYUBRR F_CPU / 16 / BAUD - 1  // Calcul de la valeur d'UBRR
+
 MPU9250 mpu;
 int status;
 double angle;
@@ -47,9 +51,6 @@ double lireTensionCapteur(uint8_t broche) {
 
 
 int main(void) {
-#define F_CPU 16000000UL              // Fréquence du CPU
-#define BAUD 9600                     // Débit en bauds
-#define MYUBRR F_CPU / 16 / BAUD - 1  // Calcul de la valeur d'UBRR
 
   DDRC &= ~(1 << PC0);  // PC0 en entrée
   DDRC &= ~(1 << PC1);  // PC1 en entrée
