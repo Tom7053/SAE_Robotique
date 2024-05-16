@@ -88,7 +88,7 @@ double tensionCapteur2 = lireTensionCapteur(PC1);
 double tensionCapteur3 = lireTensionCapteur(PC2);
 
 // Logique de contrôle en fonction des tensions des capteurs
-char* direction;
+char direction;
 
 if (tensionCapteur2 > tensionCapteur1 && tensionCapteur2 > tensionCapteur3) {
     direction = "avancer"; // Avancer tout droit si le capteur du milieu détecte le signal le plus fort
@@ -99,9 +99,6 @@ if (tensionCapteur2 > tensionCapteur1 && tensionCapteur2 > tensionCapteur3) {
 } else {
     direction = "avancer"; // Par défaut, avancer tout droit
 }
-
-// Affichage de la direction pour débogage
-printf("Direction: %s\n", direction);
 
   // Transmission de l'angle calculé et de la direction via USART
   //USART_Transmit((unsigned char)angle);  // Convertir l'angle
