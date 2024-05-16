@@ -1,0 +1,39 @@
+#include <avr/io.h>
+#include <util/delay.h>
+
+#define F_CPU 16000000UL              // Fréquence du CPU
+#define BAUD 9600                     // Débit en bauds
+#define MYUBRR F_CPU / 16 / BAUD - 1  // Calcul de la valeur d'UBRR
+
+// Initialisation de l'USART
+void USART_Init(unsigned int ubrr) {
+  UBRR0H = (unsigned char)(ubrr >> 8);
+  UBRR0L = (unsigned char)ubrr;
+  UCSR0B = (1 << TXEN0);                          // Activer le transmetteur
+  UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);         // Format de trame : 8 bits de données, 1 bit de stop
+}
+
+// Transmission d'un caractère via USART
+void USART_Transmit(unsigned char data) {
+  while (!(UCSR0A & (1 << UDRE0)));  // Attente du buffer de transmission vide
+  UDR0 = data;                       // Envoi des données dans le buffer
+}
+
+// Transmission d'une chaîne de caractères via USART
+void USART_Transmit_String(const char* str) {
+  while (*str) {
+    USART_Transmit(*str);
+    str++;
+  }
+}
+
+int main(void) {
+  USART_Init(MYUBRR);  // Initialisation de l'USART
+  
+  while (1) {
+    USART_Transmit_String("bonjour");
+    _delay_ms(1000);  // Attendre une seconde avant d'envoyer à nouveau
+  }
+  
+  return 0;
+}
