@@ -1,12 +1,13 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
-#include "MPU9250.h" // Ajout de la bibliothèque pour le capteur MPU9250
+#include "MPU9250.h"  // Ajout de la bibliothèque pour le capteur MPU9250
 
 #define PI 3.14159
 
-MPU9250 IMU(Wire, 0x68); // Déclaration de l'objet MPU9250
+MPU9250 mpu;
 int status;
+double angle;
 
 // Initialisation de l'USART
 void USART_Init(unsigned int ubrr) {
@@ -35,7 +36,7 @@ double lireTensionCapteur(uint8_t broche) {
   ADMUX = (1 << REFS0) | (broche & 0b00000111);
 
   // Démarrer la conversion analogique-numérique
-  ADCSRA |= (1 << ADSC) | (1 << ADEN);// lancer une conversion (ADSC) / mettre en route CAN (ADEN)
+  ADCSRA |= (1 << ADSC) | (1 << ADEN);  // lancer une conversion (ADSC) / mettre en route CAN (ADEN)
 
   // Lire la valeur convertie
   uint16_t valeur = ADC;
@@ -48,36 +49,35 @@ double lireTensionCapteur(uint8_t broche) {
 
 
 int main(void) {
-  #define F_CPU 16000000UL              // Fréquence du CPU
-  #define BAUD 9600                     // Débit en bauds
-  #define MYUBRR F_CPU / 16 / BAUD - 1  // Calcul de la valeur d'UBRR
+#define F_CPU 16000000UL              // Fréquence du CPU
+#define BAUD 9600                     // Débit en bauds
+#define MYUBRR F_CPU / 16 / BAUD - 1  // Calcul de la valeur d'UBRR
 
-  DDRC &= ~(1 << PC0); // PC0 en entrée
-  DDRC &= ~(1 << PC1); // PC1 en entrée
-  DDRC &= ~(1 << PC2); // PC2 en entrée
+  DDRC &= ~(1 << PC0);  // PC0 en entrée
+  DDRC &= ~(1 << PC1);  // PC1 en entrée
+  DDRC &= ~(1 << PC2);  // PC2 en entrée
 
-  USART_Init(MYUBRR); // Initialisation de l'USART
-  sei();              // Activation des interruptions globales
+  USART_Init(MYUBRR);  // Initialisation de l'USART
+  sei();               // Activation des interruptions globales
 
   // Initialisation du capteur MPU9250
   Wire.begin();
-  while (!Serial)
-    ;
+  delay(2000);
 
-  status = IMU.begin();
-  if (status < 0) {
-    Serial.println("ERREUR");
-    while (1)
-      ;
+  if (!mpu.setup(0x68)) {
+    while (1) {
+      Serial.println("MPU connection failed. Please check your connection with `connection_check` example.");
+      delay(5000);
+    }
   }
 
   while (1) {
     // Lecture des valeurs d'angle du capteur MPU9250
-    IMU.readSensor();
-    angle = mpu.getYaw(); // valeur de l'angle autour de Z
+    mpu.update();
+    angle = mpu.getYaw();  // valeur de l'angle autour de Z
 
     // Lecture des tensions des capteurs
-    double tensionCapteur1 = lireTensionCapteur(PC0);
+    /*double tensionCapteur1 = lireTensionCapteur(PC0);
     double tensionCapteur2 = lireTensionCapteur(PC1);
     double tensionCapteur3 = lireTensionCapteur(PC2);
 
@@ -90,14 +90,13 @@ int main(void) {
     } else if (tensionCapteur3 > 2.5) { // Si le capteur de droite détecte le signal fort
       direction = "droite"; // Tourner à droite
     } else {
-      direction = "avancer"; // Par défaut, avancer tout droit
-    }
-
-    // Transmission de l'angle calculé et de la direction via USART
-    USART_Transmit((unsigned char)angle); // Convertir l'angle 
-    USART_Transmit(direction); 
-
-    // Attente
-    _delay_ms(500);
+      direction = "avancer"; // Par défaut, avancer tout droit*/
   }
+
+  // Transmission de l'angle calculé et de la direction via USART
+  USART_Transmit((unsigned char)angle);  // Convertir l'angle
+  //USART_Transmit(direction);
+
+  // Attente
+  _delay_ms(500);
 }
