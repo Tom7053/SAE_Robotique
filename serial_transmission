@@ -1,0 +1,40 @@
+void setup() {
+  // Initialisation de la communication série à 9600 bauds
+  Serial.begin(9600);
+}
+
+double lireTensionCapteur(uint8_t broche) {
+  // Lire la valeur analogique (10 bits)
+  uint16_t valeur = analogRead(broche);
+  
+  // Convertir la valeur lue en tension (entre 0V et 5V)
+  double tension = (valeur * 5.0) / 1023.0;
+
+  return tension;
+}
+
+void loop() {
+  // Lecture des tensions des capteurs
+  double tensionCapteur1 = lireTensionCapteur(A0); // PC0 correspond à A0
+  double tensionCapteur2 = lireTensionCapteur(A1); // PC1 correspond à A1
+  double tensionCapteur3 = lireTensionCapteur(A2); // PC2 correspond à A2
+  
+  const char* direction;
+
+  if (tensionCapteur2 > tensionCapteur1 && tensionCapteur2 > tensionCapteur3) {
+    direction = "avancer"; // Avancer tout droit si le capteur du milieu détecte le signal le plus fort
+  } else if (tensionCapteur1 > tensionCapteur2 && tensionCapteur1 > tensionCapteur3) {
+    direction = "droite"; // Tourner à droite si le capteur de gauche détecte le signal le plus fort
+  } else if (tensionCapteur3 > tensionCapteur1 && tensionCapteur3 > tensionCapteur2) {
+    direction = "gauche"; // Tourner à gauche si le capteur de droite détecte le signal le plus fort
+  } else {
+    direction = "avancer"; // Par défaut, avancer tout droit
+  }
+
+  // Transmission des données sur le moniteur série
+  Serial.println(tensionCapteur1);
+  Serial.println(tensionCapteur2);
+  Serial.println(tensionCapteur3);
+
+  delay(1000);  // Attendre une seconde avant d'envoyer à nouveau
+}
