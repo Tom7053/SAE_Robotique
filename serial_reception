@@ -5,6 +5,7 @@ void setup() {
   Serial1.begin(9600);
 }
 
+// connexion Tx sur Tx1
 void loop() {
   // Vérifie si des données sont disponibles sur la liaison série (RX)
   if (Serial1.available() > 0) {
