@@ -10,7 +10,7 @@ void loop() {
   // Vérifie si des données sont disponibles sur la liaison série (RX)
   if (Serial1.available() > 0) {
     // Lecture des données reçues
-    int receivedString = Serial1.read();
+    double receivedString = Serial1.read();
     // Affichage des données reçues sur le moniteur série (via USB)
     Serial.println(receivedString);
   }
