@@ -32,9 +32,14 @@ void loop() {
   }
 
   // Transmission des données sur le moniteur série
-  Serial.write(tensionCapteur1);
-  Serial.write(tensionCapteur2);
-  Serial.write(tensionCapteur3);
+  Serial.print("Tension capteur 1: ");
+  Serial.print(tensionCapteur1, 3);
+  Serial.print(" V, Tension capteur 2: ");
+  Serial.print(tensionCapteur2, 3);
+  Serial.print(" V, Tension capteur 3: ");
+  Serial.print(tensionCapteur3, 3);
+  Serial.print(" V, Direction: ");
+  Serial.println(direction);
 
   delay(1000);  // Attendre une seconde avant d'envoyer à nouveau
 }
